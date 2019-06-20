@@ -10,13 +10,14 @@ LiquidCrystal_I2C lcd(0x3F,20,4);
 const int pinCidlaDS = 8;
 OneWire oneWireDS(pinCidlaDS);
 DallasTemperature senzoryDS(&oneWireDS);
-float TP1;
+byte TP1;
 //bazen
-float TP2;
+byte TP2;
 //panel
-int rele = 13;
+byte rele = 13;
 
 elapsedMillis debounce;
+elapsedMillis timerCerpadlo;
 float TPB = 28;
 float TPS = 40;
 byte pinBazen = 3;
@@ -56,12 +57,16 @@ void loop(void) {
   lcd.setCursor ( 13, 3 );
   lcd.print(TPS);
 
-  if (TP2<TPS){
+  if (TP2<TPS+1){
+  timerCerpadlo = 0;
   digitalWrite(rele,HIGH);}
-  else {digitalWrite(rele,LOW);}
+  
+  if(timerCerpadlo>180000){
+    digitalWrite(rele,LOW);}
+  }
 
 
-  if (digitalRead(pinBazen == HIGH) && (digitalRead(pinSelect) == LOW) && debounce > 500){
+  if (digitalRead(pinBazen) && (!digitalRead(pinSelect)) && debounce > 500){
   TPB++;
   debounce=0;
   }
