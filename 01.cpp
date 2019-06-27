@@ -10,22 +10,24 @@ LiquidCrystal_I2C lcd(0x3F,20,4);
 const int pinCidlaDS = 8;
 OneWire oneWireDS(pinCidlaDS);
 DallasTemperature senzoryDS(&oneWireDS);
-byte TP1;
+float TP1;
 //bazen
-byte TP2;
+float TP2;
 //panel
-byte rele = 13;
+int rele = 13;
+float SEPNUTI = 0;
+int status = false;
 
 elapsedMillis debounce;
 elapsedMillis timerCerpadlo;
 float TPB = 28;
 float TPS = 40;
-byte pinBazen = 3;
+byte pinBazen = 5;
 //plus
-byte pinPanel = 4;
+byte pinPanel = 6;
 //minus
-byte pinSelect = 5;
-byte pinScreen = 6;
+byte pinSelect = 4;
+byte pinScreen = 3;
 
 ;
 void setup(void) {
@@ -33,13 +35,16 @@ void setup(void) {
   lcd.init();
   lcd.backlight();
   pinMode(rele,OUTPUT);
-  pinMode(pinBazen,INPUT);
-  pinMode(pinPanel,INPUT);
-  pinMode(pinSelect,INPUT);
-  pinMode(pinScreen,INPUT);
+  pinMode(pinBazen,INPUT_PULLUP);
+  pinMode(pinPanel,INPUT_PULLUP);
+  pinMode(pinSelect,INPUT_PULLUP);
+  pinMode(pinScreen,INPUT_PULLUP);
+
 
 }
 void loop(void) {
+
+//  if (digitalRead(status) == true) {
 
   senzoryDS.requestTemperatures();
   TP1 = senzoryDS.getTempCByIndex(0);
@@ -57,33 +62,61 @@ void loop(void) {
   lcd.setCursor ( 13, 3 );
   lcd.print(TPS);
 
+/*
+}
+
+  if (digitalRead(status) == false) {
+
+  lcd.setCursor ( 0, 0 );
+  lcd.print("----");
+  lcd.setCursor ( 2, 1 );
+  lcd.print("----");
+  lcd.setCursor ( 13, 1 );
+  lcd.print("----");
+  lcd.setCursor ( 0, 2 );
+  lcd.print("---");
+  lcd.setCursor ( 2, 3 );
+  lcd.print("--");
+  lcd.setCursor ( 13, 3 );
+  lcd.print("--");
+  lcd.clear();
+  }
+*/
+
+
   if (TP2<TPS+1){
-  timerCerpadlo = 0;
-  digitalWrite(rele,HIGH);}
-  
-  if(timerCerpadlo>180000){
-    digitalWrite(rele,LOW);}
-  }
+ timerCerpadlo = 0;
+ digitalWrite(rele,HIGH);}
+
+ if(timerCerpadlo>180000){
+digitalWrite(rele,LOW);
+SEPNUTI++;}
 
 
-  if (digitalRead(pinBazen) && (!digitalRead(pinSelect)) && debounce > 500){
+
+  if (digitalRead(pinBazen) == LOW && (digitalRead(pinSelect) == HIGH) && debounce > 500){
   TPB++;
   debounce=0;
   }
 
-  else if(digitalRead(pinBazen) && (digitalRead(pinSelect) == HIGH) && debounce > 500){
+  else if(digitalRead(pinBazen) == LOW && (digitalRead(pinSelect) == LOW) && debounce > 500){
   TPB--;
   debounce=0;
   }
 
-  if (digitalRead(pinPanel == HIGH) && (digitalRead(pinSelect) == LOW) && debounce > 500){
-  TPB++;
+  if (digitalRead(pinPanel) == LOW && (digitalRead(pinSelect) == HIGH) && debounce > 500){
+  TPS++;
   debounce=0;
   }
 
-  else if(digitalRead(pinPanel) && (digitalRead(pinSelect) == HIGH) && debounce > 500){
-  TPB--;
+  else if(digitalRead(pinPanel) == LOW && (digitalRead(pinSelect) == LOW) && debounce > 500){
+  TPS--;
   debounce=0;
   }
+/*
 
+  if (digitalRead(pinScreen) == true) { status = !status;
+ } while(digitalRead(pinScreen) == true);
+ delay(50);
+*/
 }
