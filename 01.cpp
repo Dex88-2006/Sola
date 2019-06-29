@@ -44,7 +44,7 @@ void setup(void) {
 }
 void loop(void) {
 
-//  if (digitalRead(status) == true) {
+ if (status==1) {
 
   senzoryDS.requestTemperatures();
   TP1 = senzoryDS.getTempCByIndex(0);
@@ -62,10 +62,10 @@ void loop(void) {
   lcd.setCursor ( 13, 3 );
   lcd.print(TPS);
 
-/*
+
 }
 
-  if (digitalRead(status) == false) {
+  if(status==0) {
 
   lcd.setCursor ( 0, 0 );
   lcd.print("----");
@@ -81,7 +81,7 @@ void loop(void) {
   lcd.print("--");
   lcd.clear();
   }
-*/
+
 
 
   if (TP2<TPS+1){
@@ -113,10 +113,11 @@ SEPNUTI++;}
   TPS--;
   debounce=0;
   }
-/*
 
-  if (digitalRead(pinScreen) == true) { status = !status;
- } while(digitalRead(pinScreen) == true);
- delay(50);
-*/
+
+  if (digitalRead(pinScreen) == true && debounce > 500) { status = !status;
+    debounce=0;
+ }
+
+
 }
