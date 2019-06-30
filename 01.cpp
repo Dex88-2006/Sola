@@ -4,6 +4,7 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <elapsedMillis.h>
+#include <DS3231.h>
 
 
 LiquidCrystal_I2C lcd(0x3F,20,4);
@@ -14,14 +15,21 @@ float TP1;
 //bazen
 float TP2;
 //panel
-int rele = 13;
-float SEPNUTI = 0;
-int status = false;
+int rele = 14;
+int SEPNUTI = 0;
+int releState = 0;
+
+DS3231 rtc;
+// vytvoření proměnné pro práci s časem
+RTCDateTime datumCas;
 
 elapsedMillis debounce;
 elapsedMillis timerCerpadlo;
-float TPB = 28;
-float TPS = 40;
+elapsedMillis timerCerpadlo2;
+int TPB = 30;
+int TPS = 40;
+int valve2 = 15;
+int valve1 = 16;
 byte pinBazen = 5;
 //plus
 byte pinPanel = 6;
@@ -34,67 +42,75 @@ void setup(void) {
   senzoryDS.begin();
   lcd.init();
   lcd.backlight();
+  Wire.begin();
+  // zahájení komunikace s RTC obvodem
+  rtc.begin();
+  // nastavení času v RTC podle času kompilace programu,
+  // stačí nahrát jednou
+  //rtc.setDateTime(__DATE__, "17:30:40");
+  // přímé nastavení času pro RTC
+  //rtc.setDateTime(__DATE__, "12:34:56");
   pinMode(rele,OUTPUT);
   pinMode(pinBazen,INPUT_PULLUP);
   pinMode(pinPanel,INPUT_PULLUP);
   pinMode(pinSelect,INPUT_PULLUP);
   pinMode(pinScreen,INPUT_PULLUP);
 
-
 }
 void loop(void) {
-
- if (status==1) {
+  releState = digitalRead(rele);
+  // načtení času z RTC do proměnné
+  datumCas = rtc.getDateTime();
+  // postupný tisk informací po sériové lince
 
   senzoryDS.requestTemperatures();
   TP1 = senzoryDS.getTempCByIndex(0);
   TP2 = senzoryDS.getTempCByIndex(1);
   lcd.setCursor ( 0, 0 );
   lcd.print("--Bazen--  --Panel--");
-  lcd.setCursor ( 2, 1 );
-  lcd.print(TP1);
-  lcd.setCursor ( 13, 1 );
-  lcd.print(TP2);
-  lcd.setCursor ( 0, 2 );
-  lcd.print("---Max---  ---Max---");
-  lcd.setCursor ( 2, 3 );
+  lcd.setCursor ( 0, 1 );
+  lcd.print(TP1, 1);
+  lcd.print(" (");
   lcd.print(TPB);
-  lcd.setCursor ( 13, 3 );
+  lcd.print(")");
+  lcd.setCursor ( 11, 1 );
+  lcd.print(TP2, 1);
+  lcd.print(" (");
   lcd.print(TPS);
+  lcd.print(")");
+  lcd.setCursor ( 0, 2 );
+  lcd.print(" Cas  Pumpa  Ventil");
+  lcd.setCursor ( 0, 3 );
+  lcd.print(datumCas.hour);
+  lcd.print(":");
+  lcd.print(datumCas.minute);
+  lcd.print(datumCas.second);
+  lcd.setCursor ( 7, 3 );
+  if (releState == LOW) {
 
+            lcd.print(" on");
+            }
+
+            else {
+
+                  lcd.print("off");
 
 }
 
-  if(status==0) {
 
-  lcd.setCursor ( 0, 0 );
-  lcd.print("----");
-  lcd.setCursor ( 2, 1 );
-  lcd.print("----");
-  lcd.setCursor ( 13, 1 );
-  lcd.print("----");
-  lcd.setCursor ( 0, 2 );
-  lcd.print("---");
-  lcd.setCursor ( 2, 3 );
-  lcd.print("--");
-  lcd.setCursor ( 13, 3 );
-  lcd.print("--");
-  lcd.clear();
-  }
-
-
-
-  if (TP2<TPS+1){
+if ((TP2>TPS)) {
  timerCerpadlo = 0;
- digitalWrite(rele,HIGH);}
+ digitalWrite(rele,LOW);}
 
- if(timerCerpadlo>180000){
-digitalWrite(rele,LOW);
-SEPNUTI++;}
+ if(timerCerpadlo>100000){
+digitalWrite(rele,HIGH);
+//SEPNUTI++;
+
+}
 
 
 
-  if (digitalRead(pinBazen) == LOW && (digitalRead(pinSelect) == HIGH) && debounce > 500){
+  if (digitalRead(pinBazen) == LOW  && (digitalRead(pinSelect) == HIGH)  && debounce > 500){
   TPB++;
   debounce=0;
   }
@@ -114,10 +130,22 @@ SEPNUTI++;}
   debounce=0;
   }
 
+  if ( (datumCas.hour == 7) && (datumCas.minute == 0)) { digitalWrite(valve1, HIGH ); };
+  if ( (datumCas.hour == 7) && (datumCas.minute == 1)) { digitalWrite(valve1, LOW ); };
 
-  if (digitalRead(pinScreen) == true && debounce > 500) { status = !status;
-    debounce=0;
- }
+  if ( (datumCas.hour == 19) && (datumCas.minute == 30)) { digitalWrite(valve2, HIGH ); };
+  if ( (datumCas.hour == 19) && (datumCas.minute == 31)) { digitalWrite(valve2, LOW ); };
 
+  if ( (datumCas.hour == 7) && (datumCas.minute == 0)) { digitalWrite(valve1, HIGH ); };
+/*
+  if ( (datumCas.second == 1)) {
+    timerCerpadlo2 = 0;
+    digitalWrite(rele, LOW );
+   }
 
+   if(timerCerpadlo2 > 6000){
+   digitalWrite(rele,HIGH);
+
+   }
+   */
 }
