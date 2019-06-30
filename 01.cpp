@@ -27,7 +27,7 @@ elapsedMillis debounce;
 elapsedMillis timerCerpadlo;
 elapsedMillis timerCerpadlo2;
 int TPB = 30;
-int TPS = 40;
+int TPS = 32;
 int valve2 = 15;
 int valve1 = 16;
 byte pinBazen = 5;
@@ -55,7 +55,7 @@ void setup(void) {
   pinMode(pinPanel,INPUT_PULLUP);
   pinMode(pinSelect,INPUT_PULLUP);
   pinMode(pinScreen,INPUT_PULLUP);
-
+  digitalWrite(14, HIGH) ;
 }
 void loop(void) {
   releState = digitalRead(rele);
@@ -84,8 +84,9 @@ void loop(void) {
   lcd.print(datumCas.hour);
   lcd.print(":");
   lcd.print(datumCas.minute);
+  lcd.print(":");
   lcd.print(datumCas.second);
-  lcd.setCursor ( 7, 3 );
+  lcd.setCursor ( 8, 3 );
   if (releState == LOW) {
 
             lcd.print(" on");
@@ -136,7 +137,6 @@ digitalWrite(rele,HIGH);
   if ( (datumCas.hour == 19) && (datumCas.minute == 30)) { digitalWrite(valve2, HIGH ); };
   if ( (datumCas.hour == 19) && (datumCas.minute == 31)) { digitalWrite(valve2, LOW ); };
 
-  if ( (datumCas.hour == 7) && (datumCas.minute == 0)) { digitalWrite(valve1, HIGH ); };
 /*
   if ( (datumCas.second == 1)) {
     timerCerpadlo2 = 0;
