@@ -18,7 +18,7 @@ float TP2;
 int rele = 14;
 int SEPNUTI = 0;
 int releState = 0;
-bool flag1;
+bool flag1 = true;
 
 DS3231 rtc;
 // vytvoření proměnné pro práci s časem
@@ -104,7 +104,7 @@ if ((TP2>TPS)) {
  timerCerpadlo = 0;
  digitalWrite(rele,LOW);}
 
- if(timerCerpadlo>100000 && flag){
+ if(timerCerpadlo>100000 && flag1){
 digitalWrite(rele,HIGH);
 //SEPNUTI++;
 
@@ -140,14 +140,14 @@ digitalWrite(rele,HIGH);
 
 
   if ( (datumCas.second == 1)) {
-    flag = false;
+    flag1 = false;
     timerCerpadlo2 = 0;
     digitalWrite(rele, LOW );
    }
 
    if(timerCerpadlo2 > 6000){
    digitalWrite(rele,HIGH);
-   flag =  true;
+   flag1 =  true;
 
    }
    
